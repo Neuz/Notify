@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neuz.Notify", "Neuz.Notify\Neuz.Notify.csproj", "{1CE2EC38-38C0-4DA0-87FA-DC6105837C69}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Neuz.Notify.Tests", "Neuz.Notify.Tests\Neuz.Notify.Tests.csproj", "{30053208-CFA5-4772-A5C2-43F49FAB92C3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1CE2EC38-38C0-4DA0-87FA-DC6105837C69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CE2EC38-38C0-4DA0-87FA-DC6105837C69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CE2EC38-38C0-4DA0-87FA-DC6105837C69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CE2EC38-38C0-4DA0-87FA-DC6105837C69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30053208-CFA5-4772-A5C2-43F49FAB92C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30053208-CFA5-4772-A5C2-43F49FAB92C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30053208-CFA5-4772-A5C2-43F49FAB92C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30053208-CFA5-4772-A5C2-43F49FAB92C3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D67E8CE3-F9A4-4DFE-97C1-16B88C343AB8}
+	EndGlobalSection
+EndGlobal
