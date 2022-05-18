@@ -18,4 +18,10 @@
     <ProjectReference Include="..\Neuz.Notify\Neuz.Notify.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="img\img1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

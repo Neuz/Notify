@@ -2,8 +2,12 @@
 using Neuz.Notify.WXWork.Messages;
 using Newtonsoft.Json.Linq;
 using System;
+using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 
 // ReSharper disable InconsistentNaming
 
@@ -132,8 +136,7 @@ namespace Neuz.Notify.WXWork
 
             if (string.IsNullOrEmpty(accessToken)) throw new ApplicationException("AccessToken为空");
 
-            var url = $"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={accessToken}";
-
+            var url      = $"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={accessToken}";
             var response = await url.PostJsonAsync(_message);
             var raw      = await response.GetJsonAsync<JObject>();
 
@@ -279,6 +282,144 @@ namespace Neuz.Notify.WXWork
             action.Invoke(msg);
             _message = msg;
             return this;
+        }
+
+        #endregion
+
+        #region Markdown
+
+        /// <summary>
+        /// 设置Markdown消息
+        /// <para>
+        /// 详情参照 <see href="https://developer.work.weixin.qq.com/document/path/90236#markdown%E6%B6%88%E6%81%AF"/>
+        /// </para>
+        /// </summary>
+        /// <param name="content">
+        /// markdown内容，最长不超过2048个字节，必须是utf8编码
+        /// </param>
+        /// <param name="toUser">
+        /// 指定接收消息的成员，成员ID列表（多个接收者用‘|’分隔，最多支持1000个）。<br/>
+        /// 特殊情况：指定为"@all"，则向该企业应用的全部成员发送
+        /// </param>
+        /// <param name="toParty">
+        /// 指定接收消息的部门，部门ID列表，多个接收者用‘|’分隔，最多支持100个。<br/>
+        /// 当 <see cref="toUser"/> 为"@all"时忽略本参数
+        /// </param>
+        /// <param name="toTag">
+        /// 指定接收消息的标签，标签ID列表，多个接收者用‘|’分隔，最多支持100个。<br/>
+        /// 当 <see cref="toUser"/> 为"@all"时忽略本参数
+        /// </param>
+        /// <returns></returns>
+        public WXWorkSender SetMarkdownMessage(string content, string toUser = "@all", string? toParty = null, string? toTag = null)
+        {
+            _message = new MarkdownMessage
+            {
+                ToUser  = toUser,
+                ToParty = toParty,
+                ToTag   = toTag,
+                AgentID = _auth?.AgentID,
+                Markdown = new MarkdownMessage.MarkdownCls
+                {
+                    Content = content
+                },
+                EnableDuplicateCheck   = null,
+                DuplicateCheckInterval = null
+            };
+            return this;
+        }
+
+        /// <summary>
+        /// 设置Markdown消息
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public WXWorkSender SetMarkdownMessage(Action<MarkdownMessage> action)
+        {
+            var msg = new MarkdownMessage {AgentID = _auth?.AgentID};
+            action.Invoke(msg);
+            _message = msg;
+            return this;
+        }
+
+        #endregion
+
+        #region ImageMessage
+
+        /// <summary>
+        /// 设置图片消息
+        /// <para>
+        /// 详情参照 <see href="https://developer.work.weixin.qq.com/document/path/90236#%E5%9B%BE%E7%89%87%E6%B6%88%E6%81%AF"/>
+        /// </para>
+        /// </summary>
+        /// <param name="imagePath">
+        /// 图片路径
+        /// </param>
+        /// <param name="toUser">
+        /// 指定接收消息的成员，成员ID列表（多个接收者用‘|’分隔，最多支持1000个）。<br/>
+        /// 特殊情况：指定为"@all"，则向该企业应用的全部成员发送
+        /// </param>
+        /// <param name="toParty">
+        /// 指定接收消息的部门，部门ID列表，多个接收者用‘|’分隔，最多支持100个。<br/>
+        /// 当 <see cref="toUser"/> 为"@all"时忽略本参数
+        /// </param>
+        /// <param name="toTag">
+        /// 指定接收消息的标签，标签ID列表，多个接收者用‘|’分隔，最多支持100个。<br/>
+        /// 当 <see cref="toUser"/> 为"@all"时忽略本参数
+        /// </param>
+        /// <returns></returns>
+        public WXWorkSender SetImageMessage(string imagePath, string toUser = "@all", string? toParty = null, string? toTag = null)
+        {
+            var mediaId = GetMediaId(imagePath);
+            _message = new ImageMessage()
+            {
+                ToUser  = toUser,
+                ToParty = toParty,
+                ToTag   = toTag,
+                AgentID = _auth?.AgentID,
+                Image = new ImageMessage.ImageCls
+                {
+                    MediaId = mediaId
+                },
+                Safe                   = null,
+                EnableDuplicateCheck   = null,
+                DuplicateCheckInterval = null
+            };
+
+            return this;
+        }
+
+        /// <summary>
+        /// 获取媒体文件ID
+        /// <para>
+        /// 使用上传临时素材接口<br/>
+        /// 详情 <see href="https://developer.work.weixin.qq.com/document/path/90253"/>
+        /// </para>
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        /// <exception cref="ApplicationException"></exception>
+        private string GetMediaId(string filePath)
+        {
+            using var fs = File.OpenRead(filePath);
+
+            var token = GetAccessToken();
+
+            
+            var url   = $"https://qyapi.weixin.qq.com/cgi-bin/media/upload?access_token={token}&type=file";
+
+            // 构造form-data
+            var boundary = $"----WebKitFormBoundary{DateTime.Now.Ticks:x}";
+            var content  = new MultipartFormDataContent(boundary);
+            content.Headers.Remove("Content-Type");
+            content.Headers.TryAddWithoutValidation("Content-Type", "multipart/form-data; boundary=" + boundary);
+            var sc = new StreamContent(fs, (int) fs.Length);
+            sc.Headers.Add("Content-Type", "application/octet-stream");
+            sc.Headers.Add("Content-Disposition", "form-data; name=\"filename\"; filename=\"img1.png\"");
+            content.Add(sc);
+            var result = url.PostAsync(content).Result.GetJsonAsync<JObject>().Result;
+            if (result["errcode"]?.Value<int>() == 0) return result["media_id"].ToString();
+
+            throw new ApplicationException("上传临时附件失败");
         }
 
         #endregion
