@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
+
 // ReSharper disable InconsistentNaming
 
 namespace Neuz.Notify.WXWork.Messages
 {
     /// <summary>
-    /// 文本消息
+    /// 文本卡片消息
     /// <para>
-    /// 详细信息参见 <see href="https://developer.work.weixin.qq.com/document/path/90236#%E6%96%87%E6%9C%AC%E6%B6%88%E6%81%AF"/>
+    /// 详细信息参见 <see href="https://developer.work.weixin.qq.com/document/path/90236#%E6%96%87%E6%9C%AC%E5%8D%A1%E7%89%87%E6%B6%88%E6%81%AF"/>
     /// </para>
     /// </summary>
-    public class TextMessage : IMessage
+    public class TextCardMessage : IMessage
     {
         /// <summary>
         /// 非必填<br/>
@@ -53,10 +54,10 @@ namespace Neuz.Notify.WXWork.Messages
 
         /// <summary>
         /// 必填<br/>
-        /// 消息类型，此时固定为：text
+        /// 消息类型，此时固定为：textcard
         /// </summary>
         [JsonProperty(PropertyName = "msgtype")]
-        public string MsgType = "text";
+        public string MsgType = "textcard";
 
         /// <summary>
         /// 必填<br/>
@@ -69,24 +70,38 @@ namespace Neuz.Notify.WXWork.Messages
         /// 必填<br/>
         /// 文本消息
         /// </summary>
-        [JsonProperty(PropertyName = "text")]
-        public TextCls Text { get; set; } = new TextCls();
+        [JsonProperty(PropertyName = "textcard")]
+        public TextCardCls TextCard { get; set; } = new TextCardCls();
 
-        public class TextCls
+        public class TextCardCls
         {
             /// <summary>
-            /// 消息内容，最长不超过2048个字节，超过将截断（支持id转译）
+            /// 必填<br/>
+            /// 标题，不超过128个字节，超过会自动截断（支持id转译）
             /// </summary>
-            [JsonProperty(PropertyName = "content")]
-            public string Content { get; set; } = string.Empty;
-        }
+            [JsonProperty(PropertyName = "title")]
+            public string Title { get; set; }
 
-        /// <summary>
-        /// 非必填<br/>
-        /// 表示是否是保密消息，0表示可对外分享，1表示不能分享且内容显示水印，默认为0
-        /// </summary>
-        [JsonProperty(PropertyName = "safe",NullValueHandling = NullValueHandling.Ignore)]
-        public int? Safe { get; set; }
+            /// <summary>
+            /// 必填<br/>
+            /// 描述，不超过512个字节，超过会自动截断（支持id转译）
+            /// </summary>
+            [JsonProperty(PropertyName = "description")]
+            public string Description { get; set; }
+
+            /// <summary>
+            /// 必填<br/>
+            /// 点击后跳转的链接。最长2048字节，请确保包含了协议头(http/https)
+            /// </summary>
+            [JsonProperty(PropertyName = "url")]
+            public string Url { get; set; }
+
+            /// <summary>
+            /// 按钮文字。 默认为“详情”， 不超过4个文字，超过自动截断。
+            /// </summary>
+            [JsonProperty(PropertyName = "btntxt",NullValueHandling = NullValueHandling.Ignore)]
+            public string? BtnTxt { get; set; } 
+        }
 
         /// <summary>
         /// 非必填<br/>
